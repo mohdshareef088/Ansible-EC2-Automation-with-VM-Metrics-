@@ -174,10 +174,10 @@ Example output:
 ```
 #ansible-playbook -i inventory/aws_ec2.yaml collect_metrics.yaml
 ```
-- Metrics playbook gives a clean consolidated VM health report  
- 
-
-the `aws_ec2.yaml` automatically discovers EC2 instances using tags:
+- Metrics playbook gives a clean consolidated VM health report
+- adding smtp and email credentials to all.yaml to group_vars  
+- the `aws_ec2.yaml` automatically discovers EC2 instances using tags
+  
 <img width="1580" height="823" alt="image" src="https://github.com/user-attachments/assets/7539826f-dbbe-484b-b21a-cbebb2198863" />
 
 <img width="1612" height="1552" alt="image" src="https://github.com/user-attachments/assets/f8c7190c-e557-4a40-b9cf-0b487d19f5a8" />
