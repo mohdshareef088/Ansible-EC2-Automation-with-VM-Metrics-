@@ -1,4 +1,4 @@
-# 📘  Ansible EC2 Automation & VM Metrics**
+# 📘  **Ansible EC2 Automation & VM Metrics**
 
 ## 📌 Overview
 
@@ -35,7 +35,7 @@ templates/
 
 ## 🌐 Executions
 - Install Ansible on the Ansible master with AWS CLI and create the environment with ansible.cfg
-- Tagging the hosts machines #tag.sh
+- Tagging the hosts machines OS tagging (`os=ubuntu`, `os=amazon`)#tag.sh
 Name=Environment, Values=dev
 Name=os,Values=ubuntu #if the host is ubuntu
 Name=os,Values=amazon #if the host is redhat distro
@@ -43,9 +43,10 @@ Name=os,Values=amazon #if the host is redhat distro
 <img width="621" height="77" alt="image" src="https://github.com/user-attachments/assets/b56cefdd-c4f0-41c4-8bac-9e5649e30787" />
 
 - Generate ssh-keygen for the master node and copy the master.pem file and injecting ssh public key into hosts #copy_pub.sh
-- Run the ansible-inventory -i inventory/aws_ec2.yaml --graph to show discovered IP addresses
+- Run the Dynamic inventory automatically updates when EC2 instances to show discovered IP addresses #ansible-inventory -i inventory/aws_ec2.yaml --graph 
 <img width="704" height="418" alt="image" src="https://github.com/user-attachments/assets/9234644a-e600-4ba4-9220-98c3da251e24" />
 
+## 🧪 Testing Connectivity
 - pinging the ping pong output to the remote hosts, categorizing Ubuntu and Amazon hosts
 - @os_ubuntu
   └── ec2-13-203-160-135.ap-south-1.compute.amazonaws.com
@@ -59,65 +60,9 @@ Name=os,Values=amazon #if the host is redhat distro
 ### 1️⃣ Run setup (install Docker, Maven)
 
 ```
-ansible-playbook -i inventory/aws_ec2.yaml playbook-setup.yaml
+- playbook installs required tools across mixed OS environments 
+  #ansible-playbook -i inventory/aws_ec2.yaml playbook.yaml
 ```
-
-### 2️⃣ Run metrics collection
-
-```
-ansible-playbook -i inventory/aws_ec2.yaml playbook-metrics.yaml
-```
-
-### 3️⃣ Show discovered IP addresses
-
-```
-ansible-inventory -i inventory/aws_ec2.yaml --graph
-```
-
-Example:
-
-```
-@os_ubuntu
-  └── ec2-13-203-160-135.ap-south-1.compute.amazonaws.com
-@os_amazon
-  └── ec2-15-207-222-108.ap-south-1.compute.amazonaws.com
-```
-
----
-
-
-
-- Dynamic inventory automatically updates when EC2 instances change  
-- OS tagging (`os=ubuntu`, `os=amazon`) ensures correct package manager  
-- Metrics playbook gives a clean consolidated VM health report  
-- Setup playbook installs required tools across mixed OS environments  
-
-Your `aws_ec2.yaml` automatically discovers EC2 instances using tags:
-
-```yaml
-plugin: amazon.aws.aws_ec2
-regions:
-  - ap-south-1
-filters:
-  tag:Environment: dev
-  instance-state-name: running
-
-compose:
-  ansible_host: public_ip_address
-
-keyed_groups:
-  - key: tags.os
-    prefix: os
-
-vars:
-  ansible_ssh_private_key_file: /home/ubuntu/masterkey.pem
-```
-
-### ✔ How OS grouping works
-
-- EC2 tag: `os=ubuntu` → group: `os_ubuntu`
-- EC2 tag: `os=amazon` → group: `os_amazon`
-
 ### ✔ Group variables
 
 `group_vars/os_ubuntu.yaml`:
@@ -137,10 +82,9 @@ This ensures Ansible uses the correct SSH user per OS.
 ---
 
 ## 🐳 **Setup Playbook — Install Docker, Maven, Net-tools**
+```
+`playbook.yaml`:
 
-`playbook-setup.yaml`:
-
-```yaml
 ---
 - hosts: all
   become: yes
@@ -197,6 +141,13 @@ This ensures Ansible uses the correct SSH user per OS.
         state: present
       when: ansible_os_family == "RedHat"
 ```
+<img width="1222" height="765" alt="image" src="https://github.com/user-attachments/assets/09cd30df-1846-42c7-ae31-3b59d6f95774" />
+
+<img width="1189" height="763" alt="image" src="https://github.com/user-attachments/assets/57a791ff-8b2f-4f13-906b-2eb49893d2ff" />
+
+<img width="826" height="449" alt="image" src="https://github.com/user-attachments/assets/c7e20b65-97aa-45d2-afb3-4fe3f6f1afbe" />
+
+<img width="1285" height="172" alt="image" src="https://github.com/user-attachments/assets/6884c014-58d4-44de-afef-513835285123" />
 
 ---
 
@@ -214,64 +165,25 @@ Your metrics playbook:
 Example output:
 
 ```
-3 VMs | Avg CPU: 0.17% | Avg Mem: 35.68% | Avg Disk: 21.67%
+3 VMs | Avg CPU: 0.5% | Avg Mem: 35.68% | Avg Disk: 21.67%
 ```
 
 ---
-
-## 🧪 Testing Connectivity
-
-Run:
-
-```
-ansible all -i inventory/aws_ec2.yaml -m ping
-```
-
-Expected output:
-
-```
-ec2-xx-xx-xx-xx.ap-south-1.compute.amazonaws.com | SUCCESS => pong
-```
-
----
-
-## 🚀 Running the Playbooks
-
-### 1️⃣ Run setup (install Docker, Maven)
-
-```
-ansible-playbook -i inventory/aws_ec2.yaml playbook-setup.yaml
-```
-
 ### 2️⃣ Run metrics collection
 
 ```
-ansible-playbook -i inventory/aws_ec2.yaml playbook-metrics.yaml
+#ansible-playbook -i inventory/aws_ec2.yaml collect_metrics.yaml
 ```
-
-### 3️⃣ Show discovered IP addresses
-
-```
-ansible-inventory -i inventory/aws_ec2.yaml --graph
-```
-
-Example:
-
-```
-@os_ubuntu
-  └── ec2-13-203-160-135.ap-south-1.compute.amazonaws.com
-@os_amazon
-  └── ec2-15-207-222-108.ap-south-1.compute.amazonaws.com
-```
-
----
-
-## 🏁 Final Notes
-
-- Dynamic inventory automatically updates when EC2 instances change  
-- OS tagging (`os=ubuntu`, `os=amazon`) ensures correct package manager  
 - Metrics playbook gives a clean consolidated VM health report  
-- Setup playbook installs required tools across mixed OS environments  
+ 
 
----
+the `aws_ec2.yaml` automatically discovers EC2 instances using tags:
+<img width="1580" height="823" alt="image" src="https://github.com/user-attachments/assets/7539826f-dbbe-484b-b21a-cbebb2198863" />
+
+<img width="1612" height="1552" alt="image" src="https://github.com/user-attachments/assets/f8c7190c-e557-4a40-b9cf-0b487d19f5a8" />
+
+
+
+
+
 
