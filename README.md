@@ -160,8 +160,6 @@ This ensures Ansible uses the correct SSH user per OS.
 - adding smtp and email credentials to all.yaml to group_vars  
 - the `aws_ec2.yaml` automatically discovers EC2 instances using tags
   
-<img width="1580" height="823" alt="image" src="https://github.com/user-attachments/assets/7539826f-dbbe-484b-b21a-cbebb2198863" />
-
 <img width="1612" height="1552" alt="image" src="https://github.com/user-attachments/assets/f8c7190c-e557-4a40-b9cf-0b487d19f5a8" />
 
 ## 📊 **Metrics Playbook — CPU, Memory, Disk Usage**
@@ -178,7 +176,7 @@ Your metrics playbook:
 Example output:
 
 ```
-3 VMs | Avg CPU: 0.5% | Avg Mem: 35.68% | Avg Disk: 21.67%
+3 VMs | Avg CPU: 0.5% | Avg Mem: 45% | Avg Disk: 25%
 ```
 
 
