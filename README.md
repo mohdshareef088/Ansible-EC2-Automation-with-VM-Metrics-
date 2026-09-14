@@ -2,34 +2,95 @@
 
 ## 📌 Overview
 
-This project uses **Ansible** to automate package installation (Docker, Maven), create directories, and collect **system metrics** (CPU, Memory, Disk) from multiple EC2 instances.  
+This project uses **Ansible** to automate package installation eg:(Docker, Maven), create directories, and collect **system metrics** (CPU, Memory, Disk) from multiple EC2 instances.  
 It also uses the **AWS EC2 Dynamic Inventory Plugin** to automatically fetch host IP addresses based on EC2 tags.
-
-You can run:
-
-- A **setup playbook** → installs Docker, Maven, net-tools, creates directories  
-- A **metrics playbook** → gathers CPU, memory, disk usage and emails a consolidated report  
-- A **ping test** → verifies connectivity to all EC2 hosts
 
 ---
 
-## 📁 Project Structure
+## 📁 Architecture Overview
 
 ```
 inventory/
-│
-├── aws_ec2.yaml          # Dynamic inventory configuration
-├── group_vars/
-│     ├── os_ubuntu.yaml  # Ubuntu-specific variables
-│     └── os_amazon.yaml  # Amazon Linux-specific variables
-│
-├── playbook-setup.yaml   # Installs packages (Docker, Maven)
-└── playbook-metrics.yaml # Collects VM metrics & sends report
+├── aws_ec2.yaml    # Dynamic inventory configuration
+├── playbook.yaml   # Installs packages (Docker, Maven)
+
+group_vars/
+├── os_ubuntu.yaml  # Ubuntu-specific tags
+├── os_amazon.yaml  # Amazon Linux-specific tags
+├── all.yaml        # smtp & email credentials
+
+templates/
+├── report_email_animated.html.j2 # HTML format for the hosts CPU and usage metrics
+
+├── ansible.cfg      # separate environment to run ansible configuration
+├── tag.sh           # tagging the running hosts with name web01 & 02 
+├── copy_pub.sh      # copying the pub key from the master node to the host machines 
+├── collect_metrics.yaml # collecting metrics like CPU usage, memory, and disk
+├── playbook.yaml    # running collect_metrics.yaml & send_report.yaml
+├── send_report.yaml # sending consolidated  report with the timestamp and email credentials
+
 ```
 
 ---
 
-## 🌐 Dynamic Inventory (AWS EC2)
+## 🌐 Executions
+- Install Ansible on the Ansible master with AWS CLI and create the environment with ansible.cfg
+- Tagging the hosts machines #tag.sh
+Name=Environment, Values=dev
+Name=os,Values=ubuntu #if the host is ubuntu
+Name=os,Values=amazon #if the host is redhat distro
+  
+<img width="621" height="77" alt="image" src="https://github.com/user-attachments/assets/b56cefdd-c4f0-41c4-8bac-9e5649e30787" />
+- Generate ssh-keygen for the master node and copy the master.pem file and injecting ssh public key into hosts #copy_pub.sh
+
+- Run the ansible-inventory -i inventory/aws_ec2.yaml --graph to show discovered IP addresses
+<img width="704" height="418" alt="image" src="https://github.com/user-attachments/assets/9234644a-e600-4ba4-9220-98c3da251e24" />
+
+- pinging the ping pong output to the remote hosts, categorizing Ubuntu and Amazon hosts
+- @os_ubuntu
+  └── ec2-13-203-160-135.ap-south-1.compute.amazonaws.com
+- @os_amazon
+  └── ec2-13-127-79-63.ap-south-1.compute.amazonaws.com
+<img width="1587" height="525" alt="image" src="https://github.com/user-attachments/assets/b9624be4-947d-49f8-96ed-513870590fcf" />
+
+
+## 🚀 Running the Playbooks
+
+### 1️⃣ Run setup (install Docker, Maven)
+
+```
+ansible-playbook -i inventory/aws_ec2.yaml playbook-setup.yaml
+```
+
+### 2️⃣ Run metrics collection
+
+```
+ansible-playbook -i inventory/aws_ec2.yaml playbook-metrics.yaml
+```
+
+### 3️⃣ Show discovered IP addresses
+
+```
+ansible-inventory -i inventory/aws_ec2.yaml --graph
+```
+
+Example:
+
+```
+@os_ubuntu
+  └── ec2-13-203-160-135.ap-south-1.compute.amazonaws.com
+@os_amazon
+  └── ec2-15-207-222-108.ap-south-1.compute.amazonaws.com
+```
+
+---
+
+
+
+- Dynamic inventory automatically updates when EC2 instances change  
+- OS tagging (`os=ubuntu`, `os=amazon`) ensures correct package manager  
+- Metrics playbook gives a clean consolidated VM health report  
+- Setup playbook installs required tools across mixed OS environments  
 
 Your `aws_ec2.yaml` automatically discovers EC2 instances using tags:
 
