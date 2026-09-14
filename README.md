@@ -41,8 +41,8 @@ Name=os,Values=ubuntu #if the host is ubuntu
 Name=os,Values=amazon #if the host is redhat distro
   
 <img width="621" height="77" alt="image" src="https://github.com/user-attachments/assets/b56cefdd-c4f0-41c4-8bac-9e5649e30787" />
-- Generate ssh-keygen for the master node and copy the master.pem file and injecting ssh public key into hosts #copy_pub.sh
 
+- Generate ssh-keygen for the master node and copy the master.pem file and injecting ssh public key into hosts #copy_pub.sh
 - Run the ansible-inventory -i inventory/aws_ec2.yaml --graph to show discovered IP addresses
 <img width="704" height="418" alt="image" src="https://github.com/user-attachments/assets/9234644a-e600-4ba4-9220-98c3da251e24" />
 
